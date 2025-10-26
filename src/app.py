@@ -19,6 +19,7 @@ current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
 
+
 # In-memory activity database
 activities = {
     "Chess Club": {
@@ -77,6 +78,35 @@ activities = {
     }
 }
 
+# In-memory student database with academic grades and activity scores
+students = {
+    "michael@mergington.edu": {
+        "name": "Michael",
+        "grade_level": 11,
+        "academic_grades": [8.5, 9.0, 8.0],  # Example grades
+        "activity_scores": {"Chess Club": 9.0}
+    },
+    "daniel@mergington.edu": {
+        "name": "Daniel",
+        "grade_level": 11,
+        "academic_grades": [7.5, 8.0, 7.0],
+        "activity_scores": {"Chess Club": 8.0}
+    },
+    "emma@mergington.edu": {
+        "name": "Emma",
+        "grade_level": 10,
+        "academic_grades": [9.0, 9.5, 9.0],
+        "activity_scores": {"Programming Class": 9.5}
+    },
+    "sophia@mergington.edu": {
+        "name": "Sophia",
+        "grade_level": 10,
+        "academic_grades": [8.0, 8.5, 8.0],
+        "activity_scores": {"Programming Class": 8.5}
+    },
+    # ...add other students as needed
+}
+
 
 @app.get("/")
 def root():
@@ -122,6 +152,7 @@ def unregister_from_activity(activity_name: str, email: str):
 
     # Validate student is signed up
     if email not in activity["participants"]:
+
         raise HTTPException(
             status_code=400,
             detail="Student is not signed up for this activity"
@@ -130,3 +161,27 @@ def unregister_from_activity(activity_name: str, email: str):
     # Remove student
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
+
+# Merit score calculation
+def calcular_score_merito(student):
+    grades = student.get("academic_grades", [])
+    activity_scores = list(student.get("activity_scores", {}).values())
+    avg_grades = sum(grades) / len(grades) if grades else 0
+    avg_activities = sum(activity_scores) / len(activity_scores) if activity_scores else 0
+    score = (avg_grades + avg_activities) / 2
+    return score
+
+# Merit ranking endpoint
+@app.get("/students/merit-ranking")
+def get_merit_ranking():
+    ranking = []
+    for email, student in students.items():
+        score = calcular_score_merito(student)
+        ranking.append({
+            "email": email,
+            "name": student["name"],
+            "grade_level": student["grade_level"],
+            "score_merito": score
+        })
+    ranking.sort(key=lambda x: x["score_merito"], reverse=True)
+    return ranking
