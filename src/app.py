@@ -1,29 +1,3 @@
-
-...existing code...
-
-# Função para calcular score de mérito
-def calcular_score_merito(student):
-    grades = student.get("academic_grades", [])
-    activity_scores = list(student.get("activity_scores", {}).values())
-    avg_grades = sum(grades) / len(grades) if grades else 0
-    avg_activities = sum(activity_scores) / len(activity_scores) if activity_scores else 0
-    score = (avg_grades + avg_activities) / 2
-    return score
-
-# Endpoint para exibir ranking de alunos por mérito
-@app.get("/students/merit-ranking")
-def get_merit_ranking():
-    ranking = []
-    for email, student in students.items():
-        score = calcular_score_merito(student)
-        ranking.append({
-            "email": email,
-            "name": student["name"],
-            "grade_level": student["grade_level"],
-            "score_merito": score
-        })
-    ranking.sort(key=lambda x: x["score_merito"], reverse=True)
-    return ranking
 """
 High School Management System API
 
@@ -188,7 +162,7 @@ def unregister_from_activity(activity_name: str, email: str):
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
 
-# Função para calcular score de mérito
+# Merit score calculation
 def calcular_score_merito(student):
     grades = student.get("academic_grades", [])
     activity_scores = list(student.get("activity_scores", {}).values())
@@ -197,7 +171,7 @@ def calcular_score_merito(student):
     score = (avg_grades + avg_activities) / 2
     return score
 
-# Endpoint para exibir ranking de alunos por mérito
+# Merit ranking endpoint
 @app.get("/students/merit-ranking")
 def get_merit_ranking():
     ranking = []
