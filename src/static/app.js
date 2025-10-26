@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const meritRankingList = document.getElementById("merit-ranking-list");
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -155,6 +156,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Função para buscar e exibir o ranking de mérito
+  async function fetchMeritRanking() {
+    try {
+      const response = await fetch("/students/merit-ranking");
+      const ranking = await response.json();
+      meritRankingList.innerHTML = "";
+      if (ranking.length === 0) {
+        meritRankingList.innerHTML = "<p>No merit ranking available.</p>";
+        return;
+      }
+      const table = document.createElement("table");
+      table.className = "merit-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Grade Level</th>
+            <th>Merit Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ranking
+            .map(
+              (student, idx) => `
+                <tr>
+                  <td>${idx + 1}</td>
+                  <td>${student.name}</td>
+                  <td>${student.email}</td>
+                  <td>${student.grade_level}</td>
+                  <td>${student.score_merito.toFixed(2)}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      `;
+      meritRankingList.appendChild(table);
+    } catch (error) {
+      meritRankingList.innerHTML = "<p>Failed to load merit ranking.</p>";
+      console.error("Error fetching merit ranking:", error);
+    }
+  }
+
   // Initialize app
   fetchActivities();
+  fetchMeritRanking();
 });
